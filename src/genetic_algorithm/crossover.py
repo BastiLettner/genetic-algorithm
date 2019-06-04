@@ -153,6 +153,61 @@ class SinglePointCrossedUniformCrossover(AbstractCrossoverStrategy):
 
 
 @gin.configurable
+class RandomKPointCrossover(AbstractCrossoverStrategy):
+
+    """ Perform PointCrossover at k-sampled points """
+
+    def __init__(self, problem_size, k, seed):
+        """
+        Construct Crossover operator
+
+        Args:
+            problem_size(int): Length of the genetic string
+            k(int): Number of points
+            seed(int): Seed for the rng
+        """
+        assert k < problem_size, "K must be smaller than the genetic string"
+        self.rng = np.random.RandomState(seed=seed)
+        self.k = k
+        self.problem_size = problem_size
+
+    def crossover(self, parent_one, parent_two):
+        """
+        Perform Crossover.
+
+        Args:
+            parent_one(Chromosome):
+            parent_two(Chromosome):
+
+        Returns:
+            child_one, child_two
+        """
+        assert self.problem_size == len(parent_one.genetic_string), "The size of the genetic string does not equal the" \
+                                                                    "specified problem size"
+        child_one = Chromosome(genetic_code=copy.copy(parent_one.genetic_string))
+        child_two = Chromosome(genetic_code=copy.copy(parent_two.genetic_string))
+
+        k_points = sorted([self.rng.randint(0, self.problem_size) for _ in range(self.k)])
+        k_points = [0] + k_points + [self.problem_size]
+        # 0, 0, 3, 5, 10
+        for i, k in enumerate(k_points):
+
+            if i == len(k_points) - 1:
+                break
+
+            next_k = k_points[i+1]
+
+            if k == next_k:
+                continue
+
+            if i % 2:
+                child_one.genetic_string[k:next_k] = parent_two.genetic_string[k:next_k]
+                child_two.genetic_string[k:next_k] = parent_one.genetic_string[k:next_k]
+
+        return child_one, child_two
+
+
+@gin.configurable
 class PMCrossover(AbstractCrossoverStrategy):
 
     """ Implements partially mapped crossover. An important feature of PMX is that it works on problem

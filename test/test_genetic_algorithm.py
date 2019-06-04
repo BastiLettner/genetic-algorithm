@@ -4,7 +4,7 @@ import unittest
 from genetic_algorithm.chromosome import Chromosome
 from genetic_algorithm.crossover import KPointCrossover
 from genetic_algorithm.genetic_algorithm import GeneticAlgorithm
-from genetic_algorithm.crossover import SinglePointCrossedUniformCrossover
+from genetic_algorithm.crossover import SinglePointCrossedUniformCrossover, RandomKPointCrossover
 from genetic_algorithm.crossover import PMCrossover, UPMCrossover, OrderedCrossover
 from genetic_algorithm import population as population
 from genetic_algorithm.fitness import AbstractFitnessStrategy
@@ -58,6 +58,33 @@ class TestCrossover(unittest.TestCase):
             child_two.genetic_string,
             [19, 1, 17, 3, 15, 5, 13, 7, 11, 9, 9, 11, 7, 13, 5, 15, 3, 17, 1, 19],
             msg="Incorrect crossover"
+        )
+
+    def test_random_k_point_crossover(self):
+        """ Test the RandomKPoint Crossover strategy """
+
+        crossover_operator = RandomKPointCrossover(problem_size=10, k=3, seed=0)
+
+        parent_one = Chromosome([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        parent_two = Chromosome([9, 8, 7, 6, 5, 4, 3, 2, 1, 0])
+
+        child_one, child_two = crossover_operator.crossover(parent_one, parent_two)
+        # 0, 3, 5
+        self.assertEqual(
+            parent_one.genetic_string,
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+        )
+        self.assertEqual(
+            parent_two.genetic_string,
+            [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+        )
+        self.assertEqual(
+            child_one.genetic_string,
+            [9, 8, 7, 3, 4, 4, 3, 2, 1, 0]
+        )
+        self.assertEqual(
+            child_two.genetic_string,
+            [0, 1, 2, 6, 5, 5, 6, 7, 8, 9]
         )
 
     def test_single_point_crossed_uniform_crossover(self):

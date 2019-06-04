@@ -83,7 +83,7 @@ class GeneticAlgorithm(object):
         # get the best solution
         best_solution = population.get_fittest_member()
 
-        logging.info(
+        self.logger.info(
             "Generation {} \t Best fitness {} \t Population Size {}".format(
                 0,
                 best_solution.fitness,
@@ -121,7 +121,7 @@ class GeneticAlgorithm(object):
             # Get the best solution
             best_solution = population.get_fittest_member()
 
-            self.logger.info(
+            print(
                 "Generation {} \t Best fitness {} \t Population Size {}".format(
                     generation + 1,
                     best_solution.fitness,

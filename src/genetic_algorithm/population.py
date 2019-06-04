@@ -86,7 +86,6 @@ class Population(object):
             scores[max_idx] = -np.inf  # make sure this one is not selected again
         return best_n
 
-
     @property
     def num_members(self):
         """
@@ -191,6 +190,45 @@ class RandomUniformInitialization(AbstractInitialPopulationStrategy):
         population = Population(size=self.size)
         for i in range(self.size):
             code = [self.sampler() for _ in range(self.problem_size)]
+            population.add_member(
+                Chromosome(
+                    genetic_code=code
+                )
+            )
+
+        return population
+
+
+@gin.configurable
+class RandomValueInitialization(AbstractInitialPopulationStrategy):
+
+    """ Given a list of values the chromosome will use these values to initialize """
+
+    def __init__(self, size, problem_size, values, seed=0):
+        """
+        Construct Object
+        Args:
+            size(int): Size of the population
+            problem_size(int): Size of the problem. I.e. length of the genetic string
+            seed(int): Seed for the rng
+            values(list): List of values to choose the from. E.g. [0, 1] produces binary chromosomes
+        """
+        super(RandomValueInitialization, self).__init__(
+            size=size,
+            problem_size=problem_size
+        )
+        self.rng = np.random.RandomState(seed=seed)
+        self.values = values
+
+    def generate_population(self):
+        """
+        Generate size population members and return the population
+        Returns:
+            pop(Population)
+        """
+        population = Population(size=self.size)
+        for i in range(self.size):
+            code = [self.rng.choice(self.values) for _ in range(self.problem_size)]
             population.add_member(
                 Chromosome(
                     genetic_code=code
