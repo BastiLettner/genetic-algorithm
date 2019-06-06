@@ -200,7 +200,7 @@ class RandomUniformInitialization(AbstractInitialPopulationStrategy):
 
 
 @gin.configurable
-class RandomValueInitialization(AbstractInitialPopulationStrategy):
+class RandomDiscreteValueInitialization(AbstractInitialPopulationStrategy):
 
     """ Given a list of values the chromosome will use these values to initialize """
 
@@ -213,7 +213,7 @@ class RandomValueInitialization(AbstractInitialPopulationStrategy):
             seed(int): Seed for the rng
             values(list): List of values to choose the from. E.g. [0, 1] produces binary chromosomes
         """
-        super(RandomValueInitialization, self).__init__(
+        super(RandomDiscreteValueInitialization, self).__init__(
             size=size,
             problem_size=problem_size
         )
@@ -229,6 +229,45 @@ class RandomValueInitialization(AbstractInitialPopulationStrategy):
         population = Population(size=self.size)
         for i in range(self.size):
             code = [self.rng.choice(self.values) for _ in range(self.problem_size)]
+            population.add_member(
+                Chromosome(
+                    genetic_code=code
+                )
+            )
+
+        return population
+
+
+@gin.configurable
+class RandomNormalInitialization(AbstractInitialPopulationStrategy):
+
+    """ Given a list of values the chromosome will use these values to initialize """
+
+    def __init__(self, size, problem_size, mean=0.0, std=1.0,  seed=0):
+        """
+        Construct Object
+        Args:
+            size(int): Size of the population
+            problem_size(int): Size of the problem. I.e. length of the genetic string
+            seed(int): Seed for the rng
+            values(list): List of values to choose the from. E.g. [0, 1] produces binary chromosomes
+        """
+        super(RandomNormalInitialization, self).__init__(
+            size=size,
+            problem_size=problem_size
+        )
+        self.rng = np.random.RandomState(seed=seed)
+        self.sampler = functools.partial(self.rng.normal, loc=mean, scale=std)
+
+    def generate_population(self):
+        """
+        Generate size population members and return the population
+        Returns:
+            pop(Population)
+        """
+        population = Population(size=self.size)
+        for i in range(self.size):
+            code = [self.sampler() for _ in range(self.problem_size)]
             population.add_member(
                 Chromosome(
                     genetic_code=code

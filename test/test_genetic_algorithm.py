@@ -268,6 +268,53 @@ class TestPopulation(unittest.TestCase):
                     population.RandomUniformInitialization.__class__.__name__)
                 )
 
+    def test_discrete_value_initialization(self):
+        """ Test the initialization where we select randomly from a set of values """
+        pop = population.RandomDiscreteValueInitialization(
+            size=5,
+            problem_size=10,
+            values=[-1.0, 1.0],
+            seed=0
+        ).generate_population()
+        self.assertEqual(len(pop.members), 5, msg="Wrong population size after Generation with {}".format(
+            population.RandomDiscreteValueInitialization.__class__.__name__
+        ))
+        for member in pop.members:
+            self.assertEqual(
+                len(member.genetic_string),
+                10,
+                "The length of the genetic string does not "
+                "equal the problem size after population initialization"
+                "with {}".format(population.RandomDiscreteValueInitialization.__class__.__name__)
+            )
+            for value in member.genetic_string:
+                self.assertTrue(value in [-1.0, 1.0])
+
+    def test_normal_initialization(self):
+        """ Test the normal initialization """
+        pop = population.RandomNormalInitialization(
+            size=5,
+            problem_size=10,
+            seed=0
+        ).generate_population()
+        self.assertEqual(len(pop.members), 5, msg="Wrong population size after Generation with {}".format(
+            population.RandomNormalInitialization.__class__.__name__
+        ))
+        for member in pop.members:
+            self.assertEqual(
+                len(member.genetic_string),
+                10,
+                "The length of the genetic string does not "
+                "equal the problem size after population initialization"
+                "with {}".format(population.RandomNormalInitialization.__class__.__name__)
+            )
+            for value in member.genetic_string:
+                self.assertGreaterEqual(value, -100.0, "Wrong lower bound after population initialization with {}".format(
+                    population.RandomNormalInitialization.__class__.__name__)
+                )
+                self.assertLessEqual(value, 100, "Wrong upper bound after population initialization with {}".format(
+                    population.RandomNormalInitialization.__class__.__name__)
+                )
 
 
 
