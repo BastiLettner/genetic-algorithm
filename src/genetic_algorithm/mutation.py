@@ -111,3 +111,43 @@ class RandomSwapMutation(AbstractMutationStrategy):
                 tmp = chromosome.genetic_string[i]
                 chromosome.genetic_string[i] = chromosome.genetic_string[j]
                 chromosome.genetic_string[j] = tmp
+
+
+@gin.configurable
+class WhiteNoiseMutation(AbstractMutationStrategy):
+
+    """ Adds random normal distributed noise to values """
+
+    def __init__(self, n, problem_size, seed=0, mean=0, std=1, probability=0.5):
+        """
+        Constructor
+
+        Args:
+            n(int): Number of values to add noise to
+            problem_size(int): Size of the genetic string
+            seed(int): The seed for the rng
+            mean(float): mean of the normal dist
+            std(float): standard deviation of the normal dist
+            probability(float): probability of the mutation to be applied
+        """
+        super(WhiteNoiseMutation, self).__init__(probability=probability)
+        self.rng = np.random.RandomState(seed=seed)
+        self.sampler = functools.partial(self.rng.normal, loc=mean, scale=std)
+        self.n = n
+        self.problem_size = problem_size
+
+    def mutate(self, chromosome):
+        """
+        Mutate Chromosome by swapping n values
+
+        Args:
+            chromosome:
+
+        Returns:
+
+        """
+        if self.rng.rand() < self.probability:
+            chromosome.fitness = None
+            idx = self.rng.randint(0, self.problem_size, self.n)
+            for i in idx:
+                chromosome.genetic_string[i] = self.sampler() + chromosome.genetic_string[i]
