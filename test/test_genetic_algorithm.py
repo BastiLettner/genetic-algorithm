@@ -1,6 +1,8 @@
 # The Genetic Algorithm, Crossover and Mutation
 
+import os
 import unittest
+import logging
 from genetic_algorithm.chromosome import Chromosome
 from genetic_algorithm.crossover import KPointCrossover
 from genetic_algorithm.genetic_algorithm import GeneticAlgorithm
@@ -10,6 +12,7 @@ from genetic_algorithm import population as population
 from genetic_algorithm.fitness import AbstractFitnessStrategy
 from genetic_algorithm.mutation import UniformMutation, RandomSwapMutation
 from genetic_algorithm.selection import GreedySelection
+from genetic_algorithm.fitness import MultiProcessingFitnessDecorator
 
 
 class TestCrossover(unittest.TestCase):
@@ -416,6 +419,42 @@ class TestGeneticAlgorithm(unittest.TestCase):
         self.assertEqual(pop.members[2].fitness, pop.members[2].genetic_string[0])
         self.assertEqual(pop.members[3].fitness, pop.members[3].genetic_string[0])
         self.assertEqual(pop.members[4].fitness, pop.members[4].genetic_string[0])
+
+
+class TestMultiProcessingFitnessDecorator(unittest.TestCase):
+
+    """ Test the fitness function decorator which distributes the load over processes """
+
+    def test_distribution(self):
+        """ Test the distribution of fitness calc over two worker"""
+
+        class StupidFitness(AbstractFitnessStrategy):
+            """ Mock """
+            def fitness(self, chromosomes):
+                for chromosome in chromosomes:
+                    chromosome.fitness = 10
+
+        fitness_distributor = MultiProcessingFitnessDecorator(
+            fitness=StupidFitness(),
+            n_workers=2,
+            log_level=logging.INFO
+        )
+        chromosomes = [Chromosome([1, 2, 3]) for _ in range(10)]
+        for chromosome in chromosomes:
+            self.assertIsNone(chromosome.fitness)
+        fitness_distributor.fitness(chromosomes)
+        for chromosome in chromosomes:
+            self.assertEqual(chromosome.fitness, 10)
+        fitness_distributor.fitness(chromosomes)
+        for chromosome in chromosomes:
+            self.assertEqual(chromosome.fitness, 10)
+
+        # cleanup
+        fitness_distributor.terminate()
+        if os.path.isfile("backend"):
+            os.remove("backend")
+        if os.path.isfile("frontend"):
+            os.remove("frontend")
 
 
 if __name__ == '__main__':
