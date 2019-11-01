@@ -451,10 +451,11 @@ class TestMultiProcessingFitnessDecorator(unittest.TestCase):
 
         # cleanup
         fitness_distributor.terminate()
-        if os.path.isfile("backend"):
+        try:
             os.remove("backend")
-        if os.path.isfile("frontend"):
             os.remove("frontend")
+        except FileNotFoundError:
+            pass
 
 
 if __name__ == '__main__':
